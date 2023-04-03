@@ -6,8 +6,9 @@ type Skill struct {
 }
 
 type SkillSection struct {
-	Title  string
-	Skills []Skill
+	Title     string
+	Skills    []Skill
+	UpdatedAt string
 }
 
 type SkillSectionsResponse struct {

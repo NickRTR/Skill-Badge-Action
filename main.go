@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/NickRTR/Skill-Badge-Action/badge"
 	"github.com/NickRTR/Skill-Badge-Action/cli"
@@ -19,6 +19,23 @@ func setupClient(URL string) {
 	client = graphql.NewClient(URL)
 }
 
+func updatedSinceLastWeek(skills []badge.SkillSection) bool {
+	for _, skillSection := range skills {
+		date, err := time.Parse(time.RFC3339Nano, skillSection.UpdatedAt)
+		if err != nil {
+			cli.BrintErr(err.Error())
+			os.Exit(1)
+		}
+		today := time.Now()
+		daysDiff := today.Sub(date).Hours() / 24
+
+		if daysDiff <= 7 {
+			return true
+		}
+	}
+	return false
+}
+
 func getAllSkills(TOKEN string) []badge.SkillSection {
 	query := graphql.NewRequest(`
 		query {
@@ -28,6 +45,7 @@ func getAllSkills(TOKEN string) []badge.SkillSection {
 					title
 					url
 				}
+				updatedAt
 			}
 		}
 	`)
@@ -39,7 +57,8 @@ func getAllSkills(TOKEN string) []badge.SkillSection {
 	var responseData badge.SkillSectionsResponse
 
 	if err := client.Run(ctx, query, &responseData); err != nil {
-		log.Fatal(err)
+		cli.BrintErr(err.Error())
+		os.Exit(1)
 	}
 
 	return responseData.SkillSections
@@ -65,6 +84,11 @@ func main() {
 
 	setupClient(URL)
 	skills := getAllSkills(TOKEN)
+
+	if !updatedSinceLastWeek(skills) {
+		cli.Brint("Skills haven't been updated since last run -> Action done.")
+		os.Exit(0)
+	}
 
 	markdown := badge.Format(skills)
 
