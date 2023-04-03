@@ -1,4 +1,4 @@
-module github.com/NickRTR/Skills-Action
+module github.com/NickRTR/Skill-Badge-Action
 
 go 1.20
 
