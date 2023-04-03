@@ -1,0 +1,6 @@
+name: "Skill Badge Action"
+description: "Go GitHub Action that pushes my skill badges from an Hygraph CMS to my GitHub profile."
+
+runs:
+    using: docker
+    image: Dockerfile
